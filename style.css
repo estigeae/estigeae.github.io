@@ -1,0 +1,13 @@
+@font-face 
+{
+    font-family: warning;
+    src: url(font0.ttf);
+}
+
+div
+{
+    color: white; 
+    text-align: center; 
+    font-size: 50px;
+    font-family: warning;
+}
