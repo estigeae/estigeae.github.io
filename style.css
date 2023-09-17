@@ -4,11 +4,40 @@
     src: url(font0.ttf);
 }
 
+body 
+{
+    animation: fadeInAnimation ease 5s;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+}
+ 
+@keyframes fadeInAnimation {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+     }
+}
+
+.right 
+{
+    animation: rightAnim 3s 1;
+    animation-direction: normal;
+    animation-fill-mode: forwards;
+}
+  
+@keyframes rightAnim
+{
+    0%   {left: 40%}
+    100%  {left: 50%}
+}
+
 div
 {
-    color: black; 
-    text-align: center; 
-    font-size: 25px;
+    color: rgba(255, 255, 255, 0.829); 
+    text-align: left; 
+    font-size: 18px;
     font-family: warning;
 
     margin: 0; 
@@ -16,4 +45,24 @@ div
     top: 50%; 
     left: 50%; 
     transform: translate(-50%, -50%);
+}
+
+.glow 
+{
+    font-size: 18px;
+    color: #ffffffd3;
+    animation: glow 1s ease-in-out infinite alternate;
+}
+  
+@-webkit-keyframes glow 
+{
+    from 
+    {
+      text-shadow: 0 0 10px #ff00004f, 0 0 20px #ff000050, 0 0 30px #ff000044, 0 0 40px #ff000042, 0 0 50px #ff000038, 0 0 60px #fd000038, 0 0 70prgba(255, 0, 0, 0.137)73;
+    }
+    
+    to 
+    {
+      text-shadow: 0 0 20px #ff000038, 0 0 30px #ff000041, 0 0 40px #f7000038, 0 0 50px #fc00003d, 0 0 60px #ff000031, 0 0 70px #ff000033, 0 0 80px #ff000033;
+    }
 }
