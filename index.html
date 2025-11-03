@@ -3,90 +3,630 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inane</title>
+    <title>CUBO - Dashboard</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            background: #000;
+            color: #f00;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .scan-line {
+            position: fixed;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 0, 0, 0.3);
+            animation: scan 4s linear infinite;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        .noise {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.1) 0px,
+                rgba(255, 0, 0, 0.03) 1px,
+                rgba(0, 0, 0, 0.1) 2px
+            );
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* TELA DE PERGUNTAS */
+        .quiz-screen {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-image: url('Inane.png');
-            background-size: cover;
-            background-position: center;
-            color: white;
-        }
-
-        .container {
-            text-align: center;
-            background-color: rgba(0, 0, 0, 0.5);
+            min-height: 100vh;
             padding: 20px;
-            border-radius: 10px;
         }
 
-        .timer {
-            font-size: 2em;
+        .quiz-container {
+            max-width: 800px;
+            width: 100%;
+            border: 3px solid #f00;
+            padding: 30px;
+            background: rgba(20, 0, 0, 0.9);
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+        }
+
+        .quiz-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #f00;
+            padding-bottom: 15px;
+        }
+
+        .quiz-header h1 {
+            font-size: 24px;
+            letter-spacing: 3px;
+            animation: flicker 3s infinite;
+            margin-bottom: 10px;
+        }
+
+        .quiz-progress {
+            color: #ff0;
+            font-size: 14px;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .question-box {
+            margin-bottom: 30px;
+        }
+
+        .question-text {
+            font-size: 20px;
+            color: #ff0;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option-btn {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #f00;
+            color: #f00;
+            padding: 15px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+        }
+
+        .option-btn:hover {
+            background: rgba(255, 0, 0, 0.3);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+            transform: translateX(5px);
+        }
+
+        .option-btn:active {
+            transform: scale(0.98);
+        }
+
+        .error-message {
+            color: #f00;
+            font-size: 18px;
+            text-align: center;
+            animation: blink 1s infinite;
+            margin-top: 20px;
+        }
+
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0; }
+        }
+
+        /* TELA DO CUBO */
+        .cube-screen {
+            display: none;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            border: 3px solid #f00;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: rgba(20, 0, 0, 0.8);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            letter-spacing: 3px;
+            animation: flicker 3s infinite;
+        }
+
+        .status {
+            color: #ff0;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            border: 2px solid #f00;
+            padding: 15px;
+            background: rgba(20, 0, 0, 0.6);
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+        }
+
+        .panel-title {
+            color: #ff0;
+            font-size: 18px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #f00;
+            padding-bottom: 5px;
+        }
+
+        .cube-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 300px;
+            position: relative;
+        }
+
+        .cube {
+            width: 150px;
+            height: 150px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: rotate 10s infinite linear;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotateX(0deg) rotateY(0deg); }
+            100% { transform: rotateX(360deg) rotateY(360deg); }
+        }
+
+        .cube-face {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border: 2px solid #fff;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.3);
+        }
+
+        .front  { transform: translateZ(75px); }
+        .back   { transform: rotateY(180deg) translateZ(75px); }
+        .right  { transform: rotateY(90deg) translateZ(75px); }
+        .left   { transform: rotateY(-90deg) translateZ(75px); }
+        .top    { transform: rotateX(90deg) translateZ(75px); }
+        .bottom { transform: rotateX(-90deg) translateZ(75px); }
+
+        .param-row {
             display: flex;
             justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 0, 0, 0.2);
         }
 
-        .time-segment {
-            margin: 0 15px;
+        .param-label {
+            color: #f66;
         }
 
-        .time-segment span {
-            display: block;
-            font-size: 1.2em;
+        .param-value {
+            color: #f00;
+            font-weight: bold;
+        }
+
+        .warning {
+            animation: blink 1s infinite;
+        }
+
+        .bar-graph {
+            margin: 10px 0;
+        }
+
+        .bar {
+            height: 20px;
+            background: linear-gradient(90deg, #f00 0%, #a00 100%);
+            margin: 5px 0;
+            position: relative;
+            border: 1px solid #f00;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+        .bar-label {
+            position: absolute;
+            right: 5px;
+            top: 2px;
+            font-size: 12px;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .timestamp {
+            color: #888;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .alert-box {
+            border: 2px solid #ff0;
+            background: rgba(255, 255, 0, 0.1);
+            padding: 10px;
+            margin-top: 10px;
+            color: #ff0;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* TELA DE TRANSIÇÃO */
+        .transition-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .transition-screen.active {
+            display: flex;
+        }
+
+        .access-granted {
+            text-align: center;
+        }
+
+        .access-granted h2 {
+            font-size: 48px;
+            color: #0f0;
+            letter-spacing: 5px;
+            margin-bottom: 20px;
+            animation: glitch 0.3s infinite;
+        }
+
+        .access-granted p {
+            font-size: 20px;
+            color: #f00;
+            animation: flicker 2s infinite;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        @keyframes glitch {
+            0%, 100% { 
+                text-shadow: 2px 2px #f00, -2px -2px #0ff;
+                transform: translate(0);
+            }
+            25% { 
+                text-shadow: -2px 2px #f00, 2px -2px #0ff;
+                transform: translate(-2px, 2px);
+            }
+            50% { 
+                text-shadow: 2px -2px #f00, -2px 2px #0ff;
+                transform: translate(2px, -2px);
+            }
+            75% { 
+                text-shadow: -2px -2px #f00, 2px 2px #0ff;
+                transform: translate(-2px, -2px);
+            }
+        }
+
+        .fade-out {
+            animation: fadeOut 1s ease-out forwards;
+        }
+
+        .fade-in {
+            animation: fadeIn 1s ease-in forwards;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="timer">
-            <div class="time-segment">
-                <div id="days">0</div>
-                <span>D</span>
+    <div class="scan-line"></div>
+    <div class="noise"></div>
+    
+    <!-- TELA DE PERGUNTAS -->
+    <div class="quiz-screen" id="quiz-screen">
+        <div class="quiz-container">
+            <div class="quiz-header">
+                <h1>[ PROTOCOLO DE ACESSO - CLASSIFICADO ]</h1>
+                <div class="quiz-progress">QUESTÃO <span id="question-number">1</span> DE 7</div>
             </div>
-            <div class="time-segment">
-                <div id="hours">0</div>
-                <span>H</span>
+            
+            <div class="question-box">
+                <div class="question-text" id="question-text"></div>
+                <div class="options" id="options"></div>
             </div>
-            <div class="time-segment">
-                <div id="minutes">0</div>
-                <span>M</span>
+            
+            <div class="error-message hidden" id="error-message">
+                ⚠ ACESSO NEGADO - RETORNANDO AO INÍCIO ⚠
             </div>
-            <div class="time-segment">
-                <div id="seconds">0</div>
-                <span>S</span>
+        </div>
+    </div>
+
+    <!-- TELA DE TRANSIÇÃO -->
+    <div class="transition-screen" id="transition-screen">
+        <div class="access-granted">
+            <h2>[ ACESSO AUTORIZADO ]</h2>
+            <p>INICIALIZANDO SISTEMA...</p>
+        </div>
+    </div>
+
+    <!-- TELA DO CUBO -->
+    <div class="cube-screen" id="cube-screen">
+        <div class="header">
+            <h1>[ AGÊNCIA ESTIGE - SISTEMA DE ANÁLISE DO CUBO ]</h1>
+            <div class="status">STATUS: <span id="status">INTERROMPIDO</span> | ID: CU-03-α | TIMESTAMP: <span id="timestamp">02/11/2025, 18:55:46</span></div>
+        </div>
+
+        <div class="main-grid">
+            <div class="panel">
+                <div class="panel-title">/// VISUALIZAÇÃO 3D</div>
+                <div class="cube-container">
+                    <div class="cube">
+                        <div class="cube-face front"></div>
+                        <div class="cube-face back"></div>
+                        <div class="cube-face right"></div>
+                        <div class="cube-face left"></div>
+                        <div class="cube-face top"></div>
+                        <div class="cube-face bottom"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">/// PARÂMETROS DIMENSIONAIS</div>
+                <div id="params"></div>
+                <div class="timestamp">ÚLTIMA ATUALIZAÇÃO: <span id="update-time"></span></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">/// ANÁLISE DE EXPONENCIALIDADE</div>
+            <div class="bar-graph" id="energy-bars"></div>
+            <div class="alert-box">
+                ⚠ ATENÇÃO: <span class="warning">ERRO 10242: FALTA DE MEMÓRIA NA SIMULAÇÃO DE MUNDO.</span>
             </div>
         </div>
     </div>
 
     <script>
-        const targetDate = new Date("2024-12-10T00:00:00").getTime();
+        const questions = [
+            {
+                question: "O que é o cubo?",
+                options: [
+                    "A) Uma fonte de energia",
+                    "B) Mais uma de muitas falácias",
+                    "C) Uma simulação falsa"
+                ],
+                correct: 2
+            },
+            {
+                question: "Quem são vocês?",
+                options: [
+                    "A) Seres falsos",
+                    "B) Cúmplices",
+                    "C) Os maiores ladrões do mundo"
+                ],
+                correct: 0
+            },
+            {
+                question: "Quem são eles?",
+                options: [
+                    "A) Pessoas reais",
+                    "B) Outros seres falsos",
+                    "C) Fariseus do outro lado"
+                ],
+                correct: 1
+            },
+            {
+                question: "Quem é o inimigo deles?",
+                options: [
+                    "A) Aqueles que tem medo da verdade",
+                    "B) Logísticas Capivara",
+                    "C) O Imperador"
+                ],
+                correct: 2
+            },
+            {
+                question: "O que eles querem com o cubo?",
+                options: [
+                    "A) Brincarem de Deus",
+                    "B) Encontrar a arma suprema contra o imperador",
+                    "C) Fugir"
+                ],
+                correct: 2
+            },
+            {
+                question: "O que O Imperador quer?",
+                options: [
+                    "A) Viver uma utopia",
+                    "B) Ver sua filha novamente",
+                    "C) Destruir o mundo"
+                ],
+                correct: 1
+            },
+            {
+                question: "O que VOCÊ quer?",
+                options: [
+                    "A) Ver eles novamente",
+                    "B) Descobrir a verdade",
+                    "C) Viver em paz"
+                ],
+                correct: -1 // Qualquer resposta é correta
+            }
+        ];
 
-        function updateTimer() {
-            const now = new Date().getTime();
-            const difference = targetDate - now;
+        let currentQuestion = 0;
 
-            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+        function loadQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('question-number').textContent = currentQuestion + 1;
+            document.getElementById('question-text').textContent = q.question;
+            document.getElementById('error-message').classList.add('hidden');
+            
+            const optionsHtml = q.options.map((opt, index) => 
+                `<button class="option-btn" onclick="checkAnswer(${index})">${opt}</button>`
+            ).join('');
+            
+            document.getElementById('options').innerHTML = optionsHtml;
+        }
 
-            document.getElementById("days").innerHTML = days;
-            document.getElementById("hours").innerHTML = hours;
-            document.getElementById("minutes").innerHTML = minutes;
-            document.getElementById("seconds").innerHTML = seconds;
-
-            if (difference < 0) {
-                clearInterval(timerInterval);
-                document.querySelector(".timer").innerHTML = "...";
+        function checkAnswer(selected) {
+            const q = questions[currentQuestion];
+            
+            // Última pergunta aceita qualquer resposta
+            if (q.correct === -1 || selected === q.correct) {
+                currentQuestion++;
+                
+                if (currentQuestion >= questions.length) {
+                    // Mostrar tela de transição
+                    const quizScreen = document.getElementById('quiz-screen');
+                    quizScreen.classList.add('fade-out');
+                    
+                    setTimeout(() => {
+                        quizScreen.style.display = 'none';
+                        const transitionScreen = document.getElementById('transition-screen');
+                        transitionScreen.classList.add('active');
+                        
+                        // Após 3 segundos, fade out da transição e fade in do cubo
+                        setTimeout(() => {
+                            transitionScreen.classList.add('fade-out');
+                            
+                            setTimeout(() => {
+                                transitionScreen.style.display = 'none';
+                                const cubeScreen = document.getElementById('cube-screen');
+                                cubeScreen.style.display = 'block';
+                                cubeScreen.classList.add('fade-in');
+                                startCubeSystem();
+                            }, 1000);
+                        }, 3000);
+                    }, 1000);
+                } else {
+                    loadQuestion();
+                }
+            } else {
+                // Resposta errada - mostrar erro e resetar
+                document.getElementById('error-message').classList.remove('hidden');
+                setTimeout(() => {
+                    currentQuestion = 0;
+                    loadQuestion();
+                }, 2000);
             }
         }
 
-        const timerInterval = setInterval(updateTimer, 1000);
+        function startCubeSystem() {
+            updateTimestamp();
+            generateParams();
+            generateEnergyBars();
+        }
+
+        function randomValue(min, max, decimals = 2) {
+            return (Math.random() * (max - min) + min).toFixed(decimals);
+        }
+
+        function updateTimestamp() {
+            document.getElementById('update-time').textContent = '02/11/2025, 18:55:46';
+        }
+
+        function generateParams() {
+            const params = [
+                { label: 'COMPRIMENTO DA FACE', value: '1.5001', unit: 'm' },
+                { label: 'COMPRIMENTO DO ESPELHO NEGRO', value: '2.001', unit: 'm' },
+                { label: 'MASSA', value: '1.43', unit: 'kg' },
+                { label: 'TEMPERATURA', value: '5.86', unit: '°K' },
+                { label: 'ÍNDICE DE REFRAÇÃO', value: '1.562', unit: '' },
+                { label: 'ENERGIA ACUMULADA', value: '1.2 × 10³⁹', unit: 'J' },
+                { label: 'DILATAÇÃO TEMPORAL', value: '1:4', unit: '' },
+                { label: 'TAXA DE SINCRONIZAÇÃO', value: '96.8', unit: '%' },
+                { label: 'CHANCE DE ANIQUILAÇÃO', value: '0.0000187', unit: '%' }
+            ];
+
+            const paramsHtml = params.map(p => `
+                <div class="param-row">
+                    <span class="param-label">${p.label}:</span>
+                    <span class="param-value">${p.value} ${p.unit}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('params').innerHTML = paramsHtml;
+        }
+
+        function generateEnergyBars() {
+            const bars = [
+                { label: 'ESTABILIDADE', value: 87 },
+                { label: 'EXPONENCIALIDADE', value: 20 },
+                { label: 'POTENCIAL', value: 100 },
+                { label: 'RADIAÇÃO DONOVAN', value: 80 }
+            ];
+
+            const barsHtml = bars.map(b => `
+                <div class="bar" style="width: ${b.value}%">
+                    <span class="bar-label">${b.label}: ${b.value}%</span>
+                </div>
+            `).join('');
+
+            document.getElementById('energy-bars').innerHTML = barsHtml;
+        }
+
+        function updateAll() {
+            updateTimestamp();
+            generateParams();
+            generateEnergyBars();
+        }
+
+        // Iniciar o quiz
+        loadQuestion();
     </script>
 </body>
 </html>
